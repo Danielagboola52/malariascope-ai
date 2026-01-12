@@ -1,6 +1,7 @@
 // src/App.js
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 import Footer from "./components/Footer";
 import MainNav from './components/MainNav';
 import LoginPage from "./pages/LoginPage";
@@ -11,6 +12,7 @@ import Signup from './pages/Signup';
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Location from "./pages/Location";
+import About from "./pages/About";
 
 function AppContent() {
   const location = useLocation();
@@ -35,6 +37,7 @@ function AppContent() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/resetpassword" element={<ResetPassword />} />
           <Route path="/location" element={<Location />} />
+          <Route path="/About" element={<About />} />
         </Routes>
       </main>
       
@@ -45,9 +48,11 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   );
 }
 

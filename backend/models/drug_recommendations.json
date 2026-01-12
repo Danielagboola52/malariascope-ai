@@ -1,0 +1,27 @@
+{
+    "Mild": {
+      "recommendations": [
+        "Paracetamol",
+        "Plenty of rest",
+        "Hydration (drink water)"
+      ],
+      "notes": "Mild symptoms detected. Usually manageable at home, but consult a doctor if symptoms persist."
+    },
+    "Moderate": {
+      "recommendations": [
+        "Paracetamol",
+        "Diclofenac (for muscle/joint aches)",
+        "Antimalarial medication (Artemisinin-based)"
+      ],
+      "notes": "Moderate symptoms detected. Visit a clinic or hospital for further diagnosis."
+    },
+    "Severe": {
+      "recommendations": [
+        "Hospital admission",
+        "Intravenous antimalarials (as prescribed by doctor)",
+        "Supportive therapy"
+      ],
+      "notes": "Severe symptoms detected. Immediate hospital care is strongly advised."
+    }
+  }
+  

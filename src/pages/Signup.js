@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -13,6 +15,11 @@ export default function SignupPage() {
   });
   const [passwordStrength, setPasswordStrength] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  
+  const { signup } = useAuth();
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -20,6 +27,9 @@ export default function SignupPage() {
       ...prev,
       [name]: value
     }));
+
+    // Clear error when user types
+    if (errorMessage) setErrorMessage('');
 
     // Check password strength
     if (name === 'password') {
@@ -31,10 +41,12 @@ export default function SignupPage() {
     const hasNumber = /\d/.test(password);
     const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
     const hasLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
     
-    if (hasLength && hasNumber && hasSymbol) {
+    if (hasLength && hasNumber && hasSymbol && hasUpperCase && hasLowerCase) {
       setPasswordStrength('Strong');
-    } else if (hasLength && (hasNumber || hasSymbol)) {
+    } else if (hasLength && hasNumber && (hasSymbol || (hasUpperCase && hasLowerCase))) {
       setPasswordStrength('Medium');
     } else if (password.length > 0) {
       setPasswordStrength('Weak');
@@ -43,15 +55,72 @@ export default function SignupPage() {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission
-    console.log('Form submitted:', formData);
+  const validateForm = () => {
+    if (!formData.firstName.trim()) return 'First name is required';
+    if (!formData.lastName.trim()) return 'Last name is required';
+    if (!formData.email.trim()) return 'Email is required';
+    if (!formData.password) return 'Password is required';
+    if (!formData.confirmPassword) return 'Please confirm your password';
+    if (!formData.dateOfBirth) return 'Date of birth is required';
+    if (!agreedToTerms) return 'You must agree to the terms and conditions';
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) return 'Please enter a valid email address';
+    
+    // Password validation
+    if (formData.password.length < 8) return 'Password must be at least 8 characters long';
+    if (formData.password !== formData.confirmPassword) return 'Passwords do not match';
+    
+    // Age validation (must be 13 or older)
+    const today = new Date();
+    const birthDate = new Date(formData.dateOfBirth);
+    const age = today.getFullYear() - birthDate.getFullYear();
+    if (age < 13) return 'You must be at least 13 years old to create an account';
+    
+    return null;
   };
 
-  const navigateToLogin = () => {
-    // Navigate to login page - replace with your routing logic
-    window.location.href = '/login';
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validate form
+    const validationError = validateForm();
+    if (validationError) {
+      setErrorMessage(validationError);
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage('');
+
+    try {
+      const result = await signup({
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.toLowerCase().trim(),
+        password: formData.password,
+        phoneNumber: formData.phoneNumber.trim(),
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender
+      });
+
+      if (result.success) {
+        // Success - redirect to dashboard or login
+        navigate('/healthtool'); // Or wherever you want to redirect after signup
+      } else {
+        setErrorMessage(result.error || 'Registration failed. Please try again.');
+      }
+    } catch (error) {
+      setErrorMessage(error.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const navigateToLogin = (e) => {
+    e.preventDefault();
+    navigate('/login');
   };
 
   const inputStyle = {
@@ -62,7 +131,8 @@ export default function SignupPage() {
     fontSize: '16px',
     outline: 'none',
     transition: 'all 0.2s',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    opacity: isLoading ? 0.6 : 1
   };
 
   const labelStyle = {
@@ -129,6 +199,21 @@ export default function SignupPage() {
             Please complete your information to get started
           </p>
 
+          {/* Error Message */}
+          {errorMessage && (
+            <div style={{
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              color: '#dc2626',
+              padding: '12px',
+              borderRadius: '8px',
+              marginBottom: '16px',
+              fontSize: '14px'
+            }}>
+              {errorMessage}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Name Fields */}
             <div style={{ display: 'flex', gap: '16px' }}>
@@ -141,6 +226,7 @@ export default function SignupPage() {
                   onChange={handleInputChange}
                   style={inputStyle}
                   required
+                  disabled={isLoading}
                   onFocus={(e) => {
                     e.target.style.borderColor = '#3b82f6';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
@@ -160,6 +246,7 @@ export default function SignupPage() {
                   onChange={handleInputChange}
                   style={inputStyle}
                   required
+                  disabled={isLoading}
                   onFocus={(e) => {
                     e.target.style.borderColor = '#3b82f6';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
@@ -182,6 +269,7 @@ export default function SignupPage() {
                 onChange={handleInputChange}
                 style={inputStyle}
                 required
+                disabled={isLoading}
                 onFocus={(e) => {
                   e.target.style.borderColor = '#3b82f6';
                   e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
@@ -203,6 +291,7 @@ export default function SignupPage() {
                 onChange={handleInputChange}
                 style={inputStyle}
                 required
+                disabled={isLoading}
                 onFocus={(e) => {
                   e.target.style.borderColor = '#3b82f6';
                   e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
@@ -222,7 +311,7 @@ export default function SignupPage() {
                 </div>
               )}
               <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
-                At least 8 characters with numbers and symbols
+                At least 8 characters with numbers, symbols, and mixed case
               </div>
             </div>
 
@@ -236,6 +325,7 @@ export default function SignupPage() {
                 onChange={handleInputChange}
                 style={inputStyle}
                 required
+                disabled={isLoading}
                 onFocus={(e) => {
                   e.target.style.borderColor = '#3b82f6';
                   e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
@@ -245,6 +335,15 @@ export default function SignupPage() {
                   e.target.style.boxShadow = 'none';
                 }}
               />
+              {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                <div style={{ 
+                  marginTop: '4px', 
+                  fontSize: '12px', 
+                  color: '#ef4444' 
+                }}>
+                  Passwords do not match
+                </div>
+              )}
             </div>
 
             {/* Phone Number */}
@@ -257,6 +356,7 @@ export default function SignupPage() {
                 onChange={handleInputChange}
                 style={inputStyle}
                 placeholder="For 2FA and SMS alerts"
+                disabled={isLoading}
                 onFocus={(e) => {
                   e.target.style.borderColor = '#3b82f6';
                   e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
@@ -279,6 +379,7 @@ export default function SignupPage() {
                   onChange={handleInputChange}
                   style={inputStyle}
                   required
+                  disabled={isLoading}
                   onFocus={(e) => {
                     e.target.style.borderColor = '#3b82f6';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
@@ -296,6 +397,7 @@ export default function SignupPage() {
                   value={formData.gender}
                   onChange={handleInputChange}
                   style={inputStyle}
+                  disabled={isLoading}
                   onFocus={(e) => {
                     e.target.style.borderColor = '#3b82f6';
                     e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
@@ -323,58 +425,96 @@ export default function SignupPage() {
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
                 style={{ marginTop: '3px' }}
                 required
+                disabled={isLoading}
               />
               <label htmlFor="terms" style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.5' }}>
                 By creating an account, you agree to our{' '}
-                <a href="#" style={{ color: '#33444E', textDecoration: 'none' }}>
+                <button
+                  type="button"
+                  onClick={() => window.open('/terms', '_blank')}
+                  style={{ 
+                    color: '#33444E', 
+                    textDecoration: 'none',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    font: 'inherit'
+                  }}
+                  onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                  onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                >
                   Terms of Service
-                </a>{' '}
+                </button>{' '}
                 and{' '}
-                <a href="#" style={{ color: '#33444E', textDecoration: 'none' }}>
+                <button
+                  type="button"
+                  onClick={() => window.open('/privacy', '_blank')}
+                  style={{ 
+                    color: '#33444E', 
+                    textDecoration: 'none',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    font: 'inherit'
+                  }}
+                  onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                  onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                >
                   Privacy Policy
-                </a>
+                </button>
               </label>
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
+              disabled={isLoading}
               style={{
                 width: '100%',
                 padding: '12px 16px',
                 borderRadius: '8px',
                 fontWeight: '500',
                 color: 'white',
-                backgroundColor: '#33444E',
+                backgroundColor: isLoading ? '#9ca3af' : '#33444E',
                 border: 'none',
-                cursor: 'pointer',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
                 fontSize: '16px',
                 transition: 'all 0.2s',
                 marginTop: '8px'
               }}
-              onMouseEnter={(e) => e.target.style.opacity = '0.9'}
-              onMouseLeave={(e) => e.target.style.opacity = '1'}
+              onMouseEnter={(e) => {
+                if (!isLoading) e.target.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                if (!isLoading) e.target.style.opacity = '1';
+              }}
             >
-              Create Account
+              {isLoading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
           <div style={{ marginTop: '32px', textAlign: 'center' }}>
             <span style={{ color: '#6b7280' }}>Already have an account? </span>
-            <a 
-              href="#" 
+            <button
               onClick={navigateToLogin}
+              disabled={isLoading}
               style={{ 
                 fontWeight: '500', 
                 color: '#33444E',
                 textDecoration: 'none',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                font: 'inherit'
               }}
               onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
               onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
             >
               Sign in
-            </a>
+            </button>
           </div>
         </div>
       </div>

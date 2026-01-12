@@ -11,6 +11,7 @@ const MainNav = () => {
   
   const navigation = [
     { name: 'Home', href: '/' },
+    { name: 'About', href: '/about' },
     { name: 'Health Tool', href: '/healthtool' },
     { name: 'Location', href: '/location' },
     { name: 'Doctors', href: '/doctor' },
