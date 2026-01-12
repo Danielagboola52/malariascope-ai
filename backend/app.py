@@ -3,6 +3,7 @@ from flask_cors import CORS
 import joblib
 import numpy as np
 import sys
+import os
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -243,7 +244,7 @@ def predict():
             return jsonify({
                 "prediction": result,
                 "confidence": confidence,
-                "recommendations": recommendations,  # Add this field
+                "recommendations": recommendations,
                 "probabilities": {
                     "negative": float(prediction_proba[0][0]),
                     "positive": float(prediction_proba[0][1])
@@ -262,4 +263,6 @@ if __name__ == "__main__":
     print("🚀 Starting Malaria Prediction API...")
     print(f"📊 Model expects {len(FEATURE_ORDER)} features")
     print(f"📋 Feature order: {FEATURE_ORDER}")
-    app.run(debug=True)
+    # UPDATED FOR PRODUCTION - Use environment PORT variable
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)

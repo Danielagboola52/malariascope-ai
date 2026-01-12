@@ -6,9 +6,14 @@ require("dotenv").config(); // load .env file
 
 const app = express();
 
-// CORS configuration - IMPORTANT: This needs to be before other middleware
+// CORS configuration - UPDATED FOR PRODUCTION
 app.use(cors({
-  origin: ["http://localhost:3000", "http://192.168.43.64:3000"], // Add your IP address
+  origin: [
+    "http://localhost:3000", 
+    "http://192.168.43.64:3000",
+    "https://malariascope-ai.netlify.app", // Your Netlify URL
+    /\.netlify\.app$/ // Allow all Netlify preview URLs
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -34,7 +39,7 @@ app.get("/", (req, res) => {
   res.send("Auth Backend is running 🚀");
 });
 
-// Start server on port 5001 (different from Python Flask)
+// Start server - ALREADY CORRECT FOR PRODUCTION
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Auth Server running on http://localhost:${PORT}`);
