@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 
+// API URL configuration - uses environment variable in production, localhost in development
+const FLASK_API_URL = process.env.REACT_APP_FLASK_API_URL || 'http://localhost:5000';
+
 export default function MalariaScopeChecker() {
-  // Initial state values - ADD COUGH HERE
+  // Initial state values
   const initialState = {
     patientName: '',
     age: '',
@@ -27,7 +30,7 @@ export default function MalariaScopeChecker() {
       difficultyBreathing: false,
       rapidBreathing: false,
       chestPain: false,
-      cough: false  // ADD THIS LINE
+      cough: false
     },
     diagnosis: null
   };
@@ -37,7 +40,6 @@ export default function MalariaScopeChecker() {
   const [temperature, setTemperature] = useState('');
   const [gender, setGender] = useState('Female');
   
-  // ADD COUGH TO SYMPTOMS STATE
   const [symptoms, setSymptoms] = useState({
     fever: false,
     chills: false,
@@ -58,7 +60,7 @@ export default function MalariaScopeChecker() {
     difficultyBreathing: false,
     rapidBreathing: false,
     chestPain: false,
-    cough: false  // ADD THIS LINE
+    cough: false
   });
 
   const [diagnosis, setDiagnosis] = useState(null);
@@ -75,7 +77,7 @@ export default function MalariaScopeChecker() {
     setIsLoading(false);
     
     // Call backend to clear session
-    fetch('http://localhost:5000/clear', {
+    fetch(`${FLASK_API_URL}/clear`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -107,7 +109,7 @@ export default function MalariaScopeChecker() {
     setIsLoading(true);
     
     try {
-      // Prepare data exactly as expected by your backend model - ADD COUGH HERE
+      // Prepare data exactly as expected by your backend model
       const requestData = {
         Age: parseInt(age),
         Gender: gender,
@@ -132,13 +134,14 @@ export default function MalariaScopeChecker() {
         Difficulty_breathing: symptoms.difficultyBreathing ? 1 : 0,
         Rapid_breathing: symptoms.rapidBreathing ? 1 : 0,
         Chest_pain: symptoms.chestPain ? 1 : 0,
-        Cough: symptoms.cough ? 1 : 0  // ADD THIS LINE
+        Cough: symptoms.cough ? 1 : 0
       };
 
       console.log('Sending to API:', requestData);
+      console.log('Using API URL:', FLASK_API_URL);
 
-      // Call your Flask API
-      const response = await fetch('http://localhost:5000/predict', {
+      // Call your Flask API - NOW USES ENVIRONMENT VARIABLE
+      const response = await fetch(`${FLASK_API_URL}/predict`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -178,7 +181,7 @@ export default function MalariaScopeChecker() {
 
     } catch (error) {
       console.error('Prediction error:', error);
-      alert(`API Error: ${error.message}. Please check if your Flask server is running on http://localhost:5000`);
+      alert(`API Error: ${error.message}. Please check if your Flask server is accessible.`);
     } finally {
       setIsLoading(false);
     }
@@ -225,7 +228,7 @@ export default function MalariaScopeChecker() {
     }
   };
 
-  // Group symptoms by severity/category for better organization - ADD COUGH HERE
+  // Group symptoms by severity/category for better organization
   const symptomGroups = {
     'Common Symptoms': {
       fever: 'Fever',
@@ -234,7 +237,7 @@ export default function MalariaScopeChecker() {
       headache: 'Headache',
       muscleAches: 'Muscle Aches',
       fatigue: 'Fatigue',
-      cough: 'Cough'  // ADD THIS LINE
+      cough: 'Cough'
     },
     'Gastrointestinal': {
       nausea: 'Nausea',

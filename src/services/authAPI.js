@@ -1,5 +1,7 @@
 // src/services/authAPI.js
-const API_BASE_URL = 'http://localhost:5001/api/auth'; // Changed from 5000 to 5001
+const API_BASE_URL = process.env.REACT_APP_NODE_API_URL 
+  ? `${process.env.REACT_APP_NODE_API_URL}/api/auth`
+  : 'http://localhost:5001/api/auth'; // Fallback for local development
 
 // Helper function to handle API responses
 const handleResponse = async (response) => {
