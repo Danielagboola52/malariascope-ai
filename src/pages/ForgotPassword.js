@@ -7,7 +7,7 @@ export default function ForgotPasswordPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  // REMOVED: const [successMessage, setSuccessMessage] = useState('');
   
   const { forgotPassword } = useAuth();
   const navigate = useNavigate();
@@ -32,14 +32,14 @@ export default function ForgotPasswordPage() {
 
     setIsLoading(true);
     setError('');
-    setSuccessMessage('');
+    // REMOVED: setSuccessMessage('');
 
     try {
       const result = await forgotPassword(email.toLowerCase().trim());
       
       if (result.success) {
         setIsSubmitted(true);
-        setSuccessMessage(result.message || 'Password reset instructions sent to your email');
+        // REMOVED: setSuccessMessage(result.message || 'Password reset instructions sent to your email');
       } else {
         setError(result.error || 'Failed to send reset email. Please try again.');
       }
@@ -64,7 +64,7 @@ export default function ForgotPasswordPage() {
     setIsSubmitted(false);
     setEmail('');
     setError('');
-    setSuccessMessage('');
+    // REMOVED: setSuccessMessage('');
   };
 
   return (

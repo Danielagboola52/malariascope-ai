@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';  // ← Removed useEffect here
 import { MapPin, Search, Star, Navigation, Clock, Phone, ChevronRight, AlertTriangle, Shield, Pill, Activity, Loader } from 'lucide-react';
 
 export default function LocationFinder() {
